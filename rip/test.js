@@ -16,7 +16,7 @@ function performRequest(endpoint, method, data, success) {
     headers = {
       'Content-Type': 'application/json',
       'Content-Length': dataString.length
-    };
+    };n
   }
   var options = {
     host: host,
@@ -33,7 +33,7 @@ function performRequest(endpoint, method, data, success) {
     res.on('data', function(data) {
       var jsonData = JSON.parse(data);
       console.log(jsonData);
-      success(jsonData);
+      success(data);
     });
   });
 
@@ -44,11 +44,21 @@ function performRequest(endpoint, method, data, success) {
 app.get('/', function(req, res) {
 	performRequest('/api.json', 'GET', '', function(data) {
 		var statusUrl = data.status_url;
+		var messagesUrl = data.messages_url;
 		var lastMessageUrl = data.last_message_url;
 		performRequest(statusUrl, 'GET', '', function(date) {
 			var currentStatus = data;
-			performRequest(lastMessageUrl, 'GET', '', function(data) {
-				res.send(statusUrl+"<BR>"+lastMessageUrl);
+			performRequest(messagesUrl, 'GET', '', function(data) {
+				if (data == '') {
+					performRequest(lastMessageUrl, 'GET', '', function(data) {
+						var lastMessage = data;
+						res.send(currentStatus+"<BR>"+lastMessage);
+					});
+				} 
+				else {
+					res.send(currentStatus+"<BR>"+data);
+				};
+				
 			});
 		});
 		
