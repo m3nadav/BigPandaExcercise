@@ -3,10 +3,12 @@ var https = require('https');
 var querystring = require('querystring');
 
 var app = express();
+
 var host = 'status.github.com';
 var apiJSON = '/api.json';
 
-function makeRequest(endpoint, process) {
+// For making simple requests with https 
+function simpleRequest(endpoint, processor) {
 	var options = {
 		host: host,
 		path: endpoint,
@@ -18,22 +20,28 @@ function makeRequest(endpoint, process) {
 		res.on('data', function(data) {
 			var jsonData = JSON.parse(data);
 			console.log(jsonData);
-			process(jsonData);
+			processor(jsonData);
 		});
 	});
 	req.end();
 };
 
+// Proccessing the data from github's api
 app.get('/', function(req, res) {
-	makeRequest(apiJSON, function(data) {
+	// Dynamicaly get relevant urls 
+	simpleRequest(apiJSON, function(data) { 
 		var statusUrl = data.status_url;
 		var messagesUrl = data.messages_url;
 		var lastMessageUrl = data.last_message_url;
-		makeRequest(statusUrl, function(data) {
+		// Get current status from github api
+		simpleRequest(statusUrl, function(data) {
 			var currentStatus = data;
-			makeRequest(messagesUrl, function(data) {
+			// Get recent messages from github api
+			simpleRequest(messagesUrl, function(data) {
+				// Trying to get as much information as possible
+				// Somtimes github has no messages but does have last message in it's api
 				if (data == '') {
-					makeRequest(lastMessageUrl, function(data) {
+					simpleRequest(lastMessageUrl, function(data) {
 						var lastMessage = data;
 						var fullResponse = {currentStatus: currentStatus, recentMessages: [lastMessage]};
 						res.send(fullResponse);
@@ -49,4 +57,5 @@ app.get('/', function(req, res) {
 	});
 });
 
+// Run the server on port 8888
 var server = app.listen(8888);
