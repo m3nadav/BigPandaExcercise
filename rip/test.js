@@ -1,16 +1,19 @@
 var express = require('express');
 var https = require('https');
 
+/*
+	This app exposes a minimal REST api with the status of github and recent messages.
+*/
+
 var app = express();
 
 var host = 'status.github.com';
-var apiJSON = '/api.json';
 
 // For making simple requests with https 
-function simpleRequest(endpoint, processor) {
+function simpleRequest(address, processor) {
 	var options = {
 		host: host,
-		path: endpoint,
+		path: address,
 		method: 'GET'
 	};
 
@@ -28,7 +31,7 @@ function simpleRequest(endpoint, processor) {
 // Proccessing the data from github's api
 app.get('/', function(req, res) {
 	// Dynamicaly get relevant urls 
-	simpleRequest(apiJSON, function(data) { 
+	simpleRequest('https://status.github.com/api.json', function(data) { 
 		var statusUrl = data.status_url;
 		var messagesUrl = data.messages_url;
 		var lastMessageUrl = data.last_message_url;
