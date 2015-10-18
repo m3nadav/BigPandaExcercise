@@ -1,0 +1,45 @@
+<html lang="en-US">
+<head>
+	<script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.3.14/angular.min.js"></script>
+	<style>
+		ul
+		{
+    		list-style-type: none;
+		}
+	</style>
+</head>
+
+<body>
+<div ng-app="githubStatus" ng-controller="statusCtrl"> 
+	<ul>
+		<li>
+			Current Status: {{ records.currentStatus.status }}
+		</li>
+		<li>
+			Last Updated: {{ records.currentStatus.last_updated | date: "dd/MM/yyyy HH:mm:ss":  timezone }}
+		</li>
+		<li>&nbsp;
+		</li>
+		<li>
+			Availability:
+		</li>
+		<ul>
+			<li ng-repeat="x in records.recentMessages">
+				{{ x.created_on | date: "dd/MM/yyyy HH:mm:ss":  timezone }}: {{ x.status }}: {{x.body}}
+			</li>
+		</ul>
+	</ul>
+</p>
+</div>
+
+<script>
+var app = angular.module('githubStatus', []);
+app.controller('statusCtrl', function($scope, $http) {
+    $http.get("http://localhost:8888/")
+    .success(function(response) {
+    	$scope.records = response;
+    });
+});
+</script>
+</body>
+</html>

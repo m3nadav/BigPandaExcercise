@@ -1,12 +1,11 @@
-var express = require('express');
-var https = require('https');
-
 /*
 	This app exposes a minimal REST api with the status of github and recent messages.
 	The app:
 		- Listens for connections on port 8888
 		- Returns a JSON object with 'currentStatus' as github status and 'recentMessages' as the last recent messages.
 */
+var express = require('express');
+var https = require('https');
 
 var app = express();
 
@@ -24,7 +23,7 @@ function simpleRequest(address, processor) {
 		var responseString = '';
 		res.on('data', function(data) {
 			var jsonData = JSON.parse(data);
-			console.log(jsonData);
+			console.log("--Data from %s: %j", address, jsonData);
 			processor(jsonData);
 		});
 	});
@@ -33,6 +32,8 @@ function simpleRequest(address, processor) {
 
 // Proccessing the data from github's api
 app.get('/', function(req, res) {
+	res.setHeader('Access-Control-Allow-Origin', '*');
+	res.setHeader('Content-Type', 'application/json');
 	// Dynamicaly get relevant urls 
 	simpleRequest('https://status.github.com/api.json', function(data) { 
 		var statusUrl = data.status_url;
@@ -48,21 +49,21 @@ app.get('/', function(req, res) {
 				if (data == '') {
 					simpleRequest(lastMessageUrl, function(data) {
 						var lastMessage = data;
-						var fullResponse = {currentStatus: currentStatus, recentMessages: [lastMessage]};
-						res.set({'Content-Type': 'application/json'});
+						var fullResponse = {"currentStatus": currentStatus, "recentMessages": [lastMessage]};
 						res.send(fullResponse);
 					});
 				} 
 				else {
 					var recentMessages = data;
-					var fullResponse = {currentStatus: currentStatus, recentMessages: [recentMessages]};
-					res.set({'Content-Type': 'application/json'});
+					var fullResponse = {"currentStatus": currentStatus, "recentMessages": [recentMessages]};
 					res.send(fullResponse);
 				};
 			});
 		});	
 	});
 });
+console.log("Initiated a new app on route /");
 
 // Run the server on port 8888
 var server = app.listen(8888);
+console.log("Server is listening on http://localhost:8888");
