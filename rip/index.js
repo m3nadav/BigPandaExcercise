@@ -3,6 +3,9 @@ var https = require('https');
 
 /*
 	This app exposes a minimal REST api with the status of github and recent messages.
+	The app:
+		- Listens for connections on port 8888
+		- Returns a JSON object with 'currentStatus' as github status and 'recentMessages' as the last recent messages.
 */
 
 var app = express();
@@ -46,12 +49,14 @@ app.get('/', function(req, res) {
 					simpleRequest(lastMessageUrl, function(data) {
 						var lastMessage = data;
 						var fullResponse = {currentStatus: currentStatus, recentMessages: [lastMessage]};
+						res.set({'Content-Type': 'application/json'});
 						res.send(fullResponse);
 					});
 				} 
 				else {
 					var recentMessages = data;
 					var fullResponse = {currentStatus: currentStatus, recentMessages: [recentMessages]};
+					res.set({'Content-Type': 'application/json'});
 					res.send(fullResponse);
 				};
 			});
